@@ -13,7 +13,7 @@ This is     a test.
 - [ ] Try configuring pulldown-cmark to add the required extension (tasklist) and use events_to_ast rather than markdown_to_ast
 
 
-### Map from markdown-ast into my own ast and vice versaz
+### Map from markdown-ast into my own ast and vice versa
 - [ ] ...
 
 - [ ] Add a new task
@@ -22,7 +22,7 @@ This is     a test.
 - [ ] Check/uncheck some box
 - [ ] Add/remove a board
 
-### Then, web interface
+### Then, web interface (web edit -> file update)
 - [ ] Leptos hello world
 - [ ] Render markdown myself (so I can edit it easily without another lib)
       (Or maybe use [leptos-markdown](https://github.com/rambip/leptos-markdown)? It supports [custom
@@ -33,3 +33,7 @@ This is     a test.
 - [ ] Button to remove lists
 - [ ] Button to remove tasks
 - [ ] Add editbox to edit a task name
+
+### Stretch goal: make it bidirectional (file edit -> web update)
+- [ ] Watch file
+- [ ] Update web interface when file changes
