@@ -34,6 +34,12 @@ This is     a test.
 - [ ] Button to remove tasks
 - [ ] Add editbox to edit a task name
 
+### Undo functionality
+- [ ] Save previous versions in .history directory, like the [local history](https://marketplace.visualstudio.com/items?itemName=xyz.local-history) vscode extension
+
 ### Stretch goal: make it bidirectional (file edit -> web update)
 - [ ] Watch file
 - [ ] Update web interface when file changes
+
+### And maybe import from other formats?
+- [ ] Maybe the format used by [nullboard](https://nullboard.io/preview) or something
