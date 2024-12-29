@@ -6,20 +6,28 @@ This is     a test.
 
 
 
-### First, basic functionality
+### First, test waters
 - [x] Pretty print markdown without changing it; see if it loses information
       (unfortunately, markdown-ast will not preserve the original markdown: it will strip two or more empty lines, and will escape the [ ]s,
       among other things. maybe markedit will fare better? or better, pulldown-cmark-to-cmark)
 - [ ] Try configuring pulldown-cmark to add the required extension (tasklist) and use events_to_ast rather than markdown_to_ast
+
+
+### Map from markdown-ast into my own ast and vice versaz
+- [ ] ...
+
 - [ ] Add a new task
 - [ ] Remove a task
 - [ ] Change name of a task
 - [ ] Check/uncheck some box
 - [ ] Add/remove a board
 
-### Second, web interface
+### Then, web interface
 - [ ] Leptos hello world
 - [ ] Render markdown myself (so I can edit it easily without another lib)
+      (Or maybe use [leptos-markdown](https://github.com/rambip/leptos-markdown)? It supports [custom
+      components](https://github.com/rambip/leptos-markdown/blob/main/examples/custom_component/src/main.rs))
+      (Also note the same author made [dioxus-markdown](https://github.com/rambip/dioxus-markdown))
 - [ ] Add button to create lists
 - [ ] Add button to create tasks
 - [ ] Button to remove lists
