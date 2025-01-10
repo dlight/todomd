@@ -5,17 +5,17 @@
 This is     a test.
 
 
-
 ### First, test waters
 - [x] Pretty print markdown without changing it; see if it loses information
       (unfortunately, markdown-ast will not preserve the original markdown: it will strip two or more empty lines, and will escape the [ ]s,
       among other things. maybe markedit will fare better? or better, pulldown-cmark-to-cmark)
-- [ ] Try configuring pulldown-cmark to add the required extension (tasklist) and use events_to_ast rather than markdown_to_ast
+- [x] Try configuring pulldown-cmark to add the required extension (tasklist)
 
+### Markdown edit
+- [ ] Fix bug in `merge_texts` preventing merging of consecutive markdown elements
+- [ ] Make PR to `pulldown-cmark-to-cmark` to add lossless markdown editing (but, not sure I will use it)
 
-### Map from markdown-ast into my own ast and vice versa
-- [ ] ...
-
+### Operations
 - [ ] Add a new task
 - [ ] Remove a task
 - [ ] Change name of a task
