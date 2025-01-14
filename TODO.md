@@ -12,7 +12,10 @@ This is     a test.
 - [x] Try configuring pulldown-cmark to add the required extension (tasklist)
 
 ### Markdown edit
-- [ ] Fix bug in `merge_texts` preventing merging of consecutive markdown elements
+- [x] Fix bug in `merge_texts` preventing merging of consecutive markdown elements
+- [ ] Make Content::Text nodes span the whole markdown inside each list item (and maybe change it to Content::Markdown)
+      Maybe this means I need to gather all events somehow, and not just Text events, and when merging, rather than checking just if x.end == y.begin,
+      check for subsets
 - [ ] Make PR to `pulldown-cmark-to-cmark` to add lossless markdown editing (but, not sure I will use it)
 
 ### Operations

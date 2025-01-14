@@ -1,7 +1,9 @@
 use itertools::Itertools;
 use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
 
+use std::env;
 use std::fs;
+use std::mem;
 use std::ops::Range;
 
 #[derive(Debug)]
@@ -18,54 +20,26 @@ impl<I> Span<I> {
 
 #[derive(Debug)]
 enum Content {
-    Text(Vec<Span<()>>), // TODO: should be Text(Span<()>)
-    NestedList(List),
+    Text(Span<()>),
+    NestedList(Span<List>),
+}
+
+macro_rules! print_helper {
+    ($ident: expr, $text: expr) => {
+        println!("{:ident$}{:?}", "", $text, ident = $ident);
+    };
 }
 
 impl Content {
-    // TODO: should be moved to Item, Contnent::Text's vec always has one element
-    fn merge_texts(&mut self) {
-        let mut new_texts = vec![];
-
+    fn print(&self, source: &str, ident: usize) {
         match self {
-            Content::Text(texts) => {
-                let mut current_range = 0..0;
-
-                if let Some(a) = texts.first() {
-                    current_range = a.range.clone();
-                }
-
-                println!("will process {texts:?}");
-
-                for (pos, text) in texts.into_iter().with_position() {
-                    let is_last =
-                        matches!(pos, itertools::Position::Last | itertools::Position::Only);
-
-                    println!(
-                        "comparing text.range: {:?} and current_range: {:?}",
-                        text.range, current_range
-                    );
-
-                    let should_merge = text.range.start == current_range.end;
-
-                    if should_merge {
-                        println!("merging {:?} and {:?}", text.range, current_range);
-                        current_range.end = text.range.end;
-                    }
-
-                    if !should_merge || is_last {
-                        new_texts.push(Span::new((), current_range));
-                        current_range = text.range.clone();
-                    }
-                }
+            Content::Text(span) => {
+                print_helper!(ident, &source[span.range.clone()]);
             }
             Content::NestedList(list) => {
-                list.merge_texts();
-                return;
+                list.print(source, ident);
             }
         }
-
-        *self = Content::Text(new_texts);
     }
 }
 
@@ -84,6 +58,53 @@ impl Item {
     }
 }
 
+impl Span<Item> {
+    fn print(&self, source: &str, ident: usize) {
+        print!("- ");
+        print_helper!(ident, self.element.checkbox);
+        for content in &self.element.contents {
+            content.print(source, ident + 2);
+        }
+    }
+}
+
+impl Item {
+    fn merge_texts(&mut self) {
+        let contents = mem::take(&mut self.contents);
+        let contents = contents
+            .into_iter()
+            .coalesce(|x, y| match (x, y) {
+                (Content::Text(x), Content::Text(y)) => {
+                    let should_merge = x.range.end == y.range.start;
+
+                    if should_merge {
+                        Ok(Content::Text(Span::new((), x.range.start..y.range.end)))
+                    } else {
+                        Err((Content::Text(x), Content::Text(y)))
+                    }
+                }
+                (Content::NestedList(mut list1), Content::NestedList(mut list2)) => {
+                    list1.element.merge_texts();
+                    list2.element.merge_texts();
+
+                    Err((Content::NestedList(list1), Content::NestedList(list2)))
+                }
+                (Content::NestedList(mut list), y) => {
+                    list.element.merge_texts();
+
+                    Err((Content::NestedList(list), y))
+                }
+                (x, Content::NestedList(mut list)) => {
+                    list.element.merge_texts();
+
+                    Err((x, Content::NestedList(list)))
+                }
+            })
+            .collect::<Vec<_>>();
+        self.contents = contents;
+    }
+}
+
 #[derive(Debug)]
 struct List {
     items: Vec<Span<Item>>,
@@ -95,15 +116,24 @@ impl List {
     }
 
     fn merge_texts(&mut self) {
-        for item in self.items.iter_mut() {
-            for content in item.element.contents.iter_mut() {
-                content.merge_texts();
-            }
+        for Span { element, .. } in &mut self.items {
+            element.merge_texts();
         }
     }
 }
 
-fn parse(input: &str) -> Vec<List> {
+impl Span<List> {
+    fn print(&self, source: &str, ident: usize) {
+        for item in &self.element.items {
+            item.print(source, ident);
+        }
+        println!();
+
+        println!("source: {:?}", &source[self.range.clone()]);
+    }
+}
+
+fn parse(input: &str) -> Vec<Span<List>> {
     let mut top_level_lists = vec![];
 
     let mut list_stack: Vec<List> = vec![];
@@ -114,22 +144,22 @@ fn parse(input: &str) -> Vec<List> {
 
     for (event, range) in parser {
         match event {
-            Event::Start(Tag::List(_)) => {
-                println!("Found list start");
+            Event::Start(Tag::List(None)) => {
+                println!("Found unordered list start");
 
                 list_stack.push(List::new());
             }
-            Event::End(TagEnd::List(_)) => {
-                println!("Found list end");
+            Event::End(TagEnd::List(false)) => {
+                println!("Found unordered list end");
 
                 let current_list = list_stack.pop().unwrap();
 
                 if let Some(current_item) = item_stack.last_mut() {
                     current_item
                         .contents
-                        .push(Content::NestedList(current_list));
+                        .push(Content::NestedList(Span::new(current_list, range)));
                 } else {
-                    top_level_lists.push(current_list);
+                    top_level_lists.push(Span::new(current_list, range));
                 }
             }
             Event::Start(Tag::Item) => {
@@ -149,7 +179,7 @@ fn parse(input: &str) -> Vec<List> {
                     println!("Found text inside item: {}", text);
                     current_item
                         .contents
-                        .push(Content::Text(vec![Span::new((), range)]));
+                        .push(Content::Text(Span::new((), range)));
                 }
             }
             Event::TaskListMarker(marked) => {
@@ -163,18 +193,23 @@ fn parse(input: &str) -> Vec<List> {
     }
 
     for list in top_level_lists.iter_mut() {
-        list.merge_texts();
+        list.element.merge_texts();
     }
 
     top_level_lists
 }
 
 fn main() {
-    let markdown = fs::read_to_string("TODO.md").unwrap();
+    let file = env::args().nth(1).unwrap_or(String::from("TODO.md"));
+    let markdown = fs::read_to_string(file).unwrap();
 
     let x = parse(&markdown);
 
     println!("");
 
-    println!("{x:#?}");
+    for list in x {
+        list.print(&markdown, 0);
+    }
+
+    //println!("{x:#?}");
 }
