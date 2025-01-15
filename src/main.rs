@@ -189,21 +189,20 @@ fn parse(input: &str) -> Vec<Span<List>> {
                 let current_item = item_stack.pop().unwrap();
                 current_list.items.push(Span::new(current_item, range));
             }
-            Event::End(_) | Event::Text(_) => {
-                if let Some(current_item) = item_stack.last_mut() {
-                    println!("Found text or something else inside item");
-                    current_item
-                        .contents
-                        .push(Content::RawMarkdown(Span::new((), range)));
-                }
-            }
             Event::TaskListMarker(marked) => {
                 println!("Found task list marker: {marked}");
 
                 let current_item = item_stack.last_mut().unwrap();
                 current_item.checkbox = Some(Span::new(marked, range));
             }
-            _ => (),
+            _ => {
+                if let Some(current_item) = item_stack.last_mut() {
+                    println!("Found something else inside item");
+                    current_item
+                        .contents
+                        .push(Content::RawMarkdown(Span::new((), range)));
+                }
+            }
         }
     }
 
