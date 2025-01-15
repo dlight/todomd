@@ -16,6 +16,8 @@ This is     a test.
 - [ ] Make Content::Text nodes span the whole markdown inside each list item (and maybe change it to Content::Markdown)
       Maybe this means I need to gather all events somehow, and not just Text events, and when merging, rather than checking just if x.end == y.begin,
       check for subsets
+  - [ ] Gather all events
+  - [ ] Change the merge_texts function to merge all events, not just concatenate
 - [ ] Make PR to `pulldown-cmark-to-cmark` to add lossless markdown editing (but, not sure I will use it)
 
 ### Operations

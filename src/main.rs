@@ -20,7 +20,7 @@ impl<I> Span<I> {
 
 #[derive(Debug)]
 enum Content {
-    Text(Span<()>),
+    RawMarkdown(Span<()>),
     NestedList(Span<List>),
 }
 
@@ -28,16 +28,19 @@ macro_rules! print_helper {
     ($ident: expr, $text: expr) => {
         println!("{:ident$}{:?}", "", $text, ident = $ident);
     };
+    ("-", $ident: expr, $text: expr) => {
+        println!("{:ident$} - {:?}", "", $text, ident = $ident);
+    };
 }
 
 impl Content {
-    fn print(&self, source: &str, ident: usize) {
+    fn print(&self, source: &str, ident: usize, verbose: bool) {
         match self {
-            Content::Text(span) => {
+            Content::RawMarkdown(span) => {
                 print_helper!(ident, &source[span.range.clone()]);
             }
             Content::NestedList(list) => {
-                list.print(source, ident);
+                list.print(source, ident, verbose);
             }
         }
     }
@@ -59,11 +62,18 @@ impl Item {
 }
 
 impl Span<Item> {
-    fn print(&self, source: &str, ident: usize) {
-        print!("- ");
-        print_helper!(ident, self.element.checkbox);
+    fn print(&self, source: &str, ident: usize, verbose: bool) {
+        print_helper!(
+            "-",
+            ident,
+            self.element.checkbox.as_ref().map(|x| x.element)
+        );
         for content in &self.element.contents {
-            content.print(source, ident + 2);
+            content.print(source, ident + 2, verbose);
+        }
+        if verbose {
+            println!("(item source: {:?})", &source[self.range.clone()]);
+            println!();
         }
     }
 }
@@ -74,13 +84,16 @@ impl Item {
         let contents = contents
             .into_iter()
             .coalesce(|x, y| match (x, y) {
-                (Content::Text(x), Content::Text(y)) => {
+                (Content::RawMarkdown(x), Content::RawMarkdown(y)) => {
                     let should_merge = x.range.end == y.range.start;
 
                     if should_merge {
-                        Ok(Content::Text(Span::new((), x.range.start..y.range.end)))
+                        Ok(Content::RawMarkdown(Span::new(
+                            (),
+                            x.range.start..y.range.end,
+                        )))
                     } else {
-                        Err((Content::Text(x), Content::Text(y)))
+                        Err((Content::RawMarkdown(x), Content::RawMarkdown(y)))
                     }
                 }
                 (Content::NestedList(mut list1), Content::NestedList(mut list2)) => {
@@ -123,13 +136,15 @@ impl List {
 }
 
 impl Span<List> {
-    fn print(&self, source: &str, ident: usize) {
+    fn print(&self, source: &str, ident: usize, verbose: bool) {
         for item in &self.element.items {
-            item.print(source, ident);
+            item.print(source, ident, verbose);
         }
-        println!();
 
-        println!("source: {:?}", &source[self.range.clone()]);
+        if verbose {
+            println!("(list source: {:?})", &source[self.range.clone()]);
+            println!();
+        }
     }
 }
 
@@ -174,12 +189,12 @@ fn parse(input: &str) -> Vec<Span<List>> {
                 let current_item = item_stack.pop().unwrap();
                 current_list.items.push(Span::new(current_item, range));
             }
-            Event::Text(text) => {
+            Event::End(_) | Event::Text(_) => {
                 if let Some(current_item) = item_stack.last_mut() {
-                    println!("Found text inside item: {}", text);
+                    println!("Found text or something else inside item");
                     current_item
                         .contents
-                        .push(Content::Text(Span::new((), range)));
+                        .push(Content::RawMarkdown(Span::new((), range)));
                 }
             }
             Event::TaskListMarker(marked) => {
@@ -208,7 +223,9 @@ fn main() {
     println!("");
 
     for list in x {
-        list.print(&markdown, 0);
+        list.print(&markdown, 0, false);
+        println!();
+        println!();
     }
 
     //println!("{x:#?}");
