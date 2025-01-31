@@ -1,9 +1,13 @@
-use merged_range2::MergedRange;
+#![allow(unused)]
+
 use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
 
 use std::env;
 use std::fs;
-use std::ops::Range;
+
+mod rangeset;
+
+use rangeset::{Range, RangeSet};
 
 macro_rules! print_helper {
     ($ident: expr, $text: expr) => {
@@ -17,18 +21,18 @@ macro_rules! print_helper {
 #[derive(Debug)]
 struct Span<I> {
     element: I,
-    range: Range<usize>,
+    range: Range,
 }
 
 #[derive(Debug, Default)]
 struct Item {
     checkbox: Option<Span<bool>>,
-    contents: MergedRange<usize>,
+    contents: RangeSet,
     nested_list: Option<Span<List>>,
 }
 
 impl Item {
-    fn span(self, range: Range<usize>) -> Span<Self> {
+    fn span(self, range: Range) -> Span<Self> {
         Span {
             element: self,
             range,
@@ -59,7 +63,7 @@ struct List {
 }
 
 impl List {
-    fn span(self, range: Range<usize>) -> Span<Self> {
+    fn span(self, range: Range) -> Span<Self> {
         Span {
             element: self,
             range,
@@ -148,7 +152,7 @@ fn parse(input: &str) -> Board {
     board
 }
 
-fn main() {
+fn dothing() {
     let file = env::args().nth(1).unwrap_or(String::from("TODO.md"));
     let markdown = fs::read_to_string(file).unwrap();
 
@@ -163,4 +167,19 @@ fn main() {
     }
 
     //println!("{x:#?}");
+}
+
+fn dootherthing() {
+    let x = vec![5..10, 1..6, 0..5, 1..2];
+
+    let r = RangeSet::from(x);
+
+    for range in r.iter() {
+        println!("{:?}", range);
+    }
+}
+
+fn main() {
+    //dothing();
+    dootherthing();
 }
