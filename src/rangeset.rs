@@ -127,82 +127,21 @@ impl RangeSet {
         self.contents.splice((start, end), [new_range]);
     }
 
-    /// TODO: make it work
+    /// Inneficient but dead simple way to remove ranges. (TODO: revert into the more optimized
+    /// implementation, and maybe keep around this one for testingq)
     pub fn remove_range(&mut self, removed_range: impl Borrow<Range>) {
         let removed_range: &Range = removed_range.borrow();
 
-        if self.contents.is_empty() {
+        if (self.contents.is_empty()) {
             return;
         }
 
-        // searching for start:
-        //  Err(0)       Ok(0)         Err(1)        Ok(1)         Err(2)       Ok(2)
-        //  Included(0)  Excluded(0)   Included(1)   Excluded(1)   Included(2)  Excluded(2)
-        // [             0,                          1,                         2]
+        let old_contents = std::mem::take(&mut self.contents);
 
-        let start = match self
-            .contents
-            .binary_search_by(|x| x.end.cmp(&removed_range.start))
-        {
-            Ok(idx) => Bound::Excluded(idx),
-            Err(idx) => Bound::Included(idx),
-        };
-
-        // searching for end:
-        //  Err(0)       Ok(0)         Err(1)        Ok(1)         Err(2)      Ok(2)
-        //  Excluded(0)  Excluded(0)   Excluded(1)   Excluded(1)   Excluded(2) Excluded(2)
-        // [             0,                          1,                        2]
-
-        let end = match self
-            .contents
-            .binary_search_by(|x| x.start.cmp(&removed_range.end))
-        {
-            Ok(idx) => Bound::Excluded(idx),
-            Err(idx) => Bound::Excluded(idx),
-        };
-
-        let mut new_ranges = Vec::new();
-
-        // Considering just the endpoints is sufficient
-        let endpoint_ranges = self.contents[(start, end)]
-            .iter()
-            .with_position()
-            .filter(|(p, _)| (!matches!(p, Position::Middle)));
-
-        for (position, range) in endpoint_ranges {
-            match position {
-                Position::First => {
-                    let left_range = range.start..removed_range.start;
-
-                    if !left_range.is_empty() {
-                        new_ranges.push(left_range);
-                    }
-                }
-                Position::Last => {
-                    let right_range = removed_range.end..range.end;
-
-                    if !right_range.is_empty() {
-                        new_ranges.push(right_range);
-                    }
-                }
-                Position::Only => {
-                    let left_range = range.start..removed_range.start;
-
-                    let right_range = removed_range.end..range.end;
-
-                    if !left_range.is_empty() {
-                        new_ranges.push(left_range);
-                    }
-
-                    if !right_range.is_empty() {
-                        new_ranges.push(right_range);
-                    }
-                }
-                Position::Middle => unreachable!(),
-            }
-        }
-
-        self.contents.splice((start, end), new_ranges);
+        self.contents = old_contents
+            .into_iter()
+            .flat_map(|s| s.range_difference(removed_range))
+            .collect();
     }
 
     pub fn iter(&self) -> impl Iterator<Item = &Range> {
