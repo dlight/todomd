@@ -325,5 +325,11 @@ mod tests {
         let mut ranges = RangeSet::from(vec![1..5, 10..15, 20..25]);
         ranges.remove_range(4..22);
         assert_eq!(ranges.contents, vec![1..4, 22..25]);
+        let mut ranges = RangeSet::from(vec![1..5]);
+        ranges.remove_range(1..2);
+        assert_eq!(ranges.contents, vec![2..5]);
+        let mut ranges = RangeSet::from(vec![1..5]);
+        ranges.remove_range(4..5);
+        assert_eq!(ranges.contents, vec![1..4]);
     }
 }

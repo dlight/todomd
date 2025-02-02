@@ -50,6 +50,9 @@ impl Span<Item> {
         for range in &self.element.contents {
             print_helper!(ident + 2, &source[range.clone()]);
         }
+        if let Some(nested) = &self.element.nested_list {
+            nested.print(source, ident + 2, verbose);
+        }
         if verbose {
             println!("(item source: {:?})", &source[self.range.clone()]);
             println!();
@@ -101,12 +104,12 @@ fn parse(input: &str) -> Board {
     for (event, range) in parser {
         match event {
             Event::Start(Tag::List(None)) => {
-                println!("Found unordered list start");
+                println!("Found unordered list start\n");
 
                 list_stack.push(List::default());
             }
             Event::End(TagEnd::List(false)) => {
-                println!("Found unordered list end");
+                println!("Found unordered list end\n");
 
                 let current_list = list_stack.pop().unwrap();
 
@@ -114,39 +117,41 @@ fn parse(input: &str) -> Board {
                     if current_item.nested_list.is_some() {
                         panic!("a list item should not have two sub lists");
                     }
-                    current_item.nested_list = Some(current_list.span(range));
+                    current_item.nested_list = Some(current_list.span(range.clone()));
                 } else {
-                    board.lists.push(current_list.span(range));
+                    board.lists.push(current_list.span(range.clone()));
                 }
             }
             Event::Start(Tag::Item) => {
-                println!("Found item start");
+                println!("Found item start\n");
 
                 item_stack.push(Item::default());
             }
             Event::End(TagEnd::Item) => {
-                println!("Found item end");
+                println!("Found item end\n");
 
                 let current_list = list_stack.last_mut().unwrap();
                 let current_item = item_stack.pop().unwrap();
-                current_list.items.push(current_item.span(range));
+                current_list.items.push(current_item.span(range.clone()));
             }
             Event::TaskListMarker(marked) => {
-                println!("Found task list marker: {marked}");
+                println!("Found task list marker: {marked}\n");
 
                 let current_item = item_stack.last_mut().unwrap();
                 current_item.checkbox = Some(Span {
                     element: marked,
-                    range,
+                    range: range.clone(),
                 });
             }
             _ => {
                 if let Some(current_item) = item_stack.last_mut() {
-                    println!("Found something else inside item");
-                    current_item.contents.insert_range(&range);
+                    println!("Found something else inside item\n");
+                    current_item.contents.insert_range(range.clone());
                 }
             }
         }
+
+        println!("{:?}\n", &input[range.clone()]);
     }
 
     board
@@ -161,25 +166,12 @@ fn dothing() {
     println!("");
 
     for list in &board.lists {
-        list.print(&markdown, 0, false);
+        list.print(&markdown, 0, true);
         println!();
         println!();
-    }
-
-    //println!("{x:#?}");
-}
-
-fn dootherthing() {
-    let x = vec![5..10, 1..6, 0..5, 1..2];
-
-    let r = RangeSet::from(x);
-
-    for range in r.iter() {
-        println!("{:?}", range);
     }
 }
 
 fn main() {
-    //dothing();
-    dootherthing();
+    dothing();
 }

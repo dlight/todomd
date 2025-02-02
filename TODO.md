@@ -1,3 +1,4 @@
-- [ ] Write `RangeSet`
+### AAA
+- [x] Write `RangeSet`
   - [x] insert ranges, merging them
-  - [ ] remove ranges (full generality is actually not needed, but whatever)
+  - [x] remove ranges
