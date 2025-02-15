@@ -1,4 +1,4 @@
-# markanban - markdown kanban board (maybe rename to todomd?)
+# todomd - manage your per-project TODO.md
 
 Should implement the spec in https://github.com/todomd/todo.md
 
