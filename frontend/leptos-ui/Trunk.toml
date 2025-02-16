@@ -1,0 +1,9 @@
+[build]
+target = "./index.html"
+
+[watch]
+ignore = [] # nothing yet
+
+[serve]
+port = 3320
+open = false

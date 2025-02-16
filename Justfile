@@ -17,4 +17,4 @@ debug *params:
 
 clean:
     cd backend && cargo clean
-    cd frontend && cargo clean
+    cd frontend/leptos-ui && cargo clean && trunk clean

@@ -1,5 +1,4 @@
-# Those things are up next, but for now they are just cluttering TODO.md
-
+# Those things will eventually be done, but for now they are just cluttering TODO.md
 
 ### Operations
 - [ ] Add a new task
@@ -9,11 +8,11 @@
 - [ ] Add/remove a board
 
 ### Then, web interface (web edit -> file update)
-- [ ] Leptos hello world
-- [ ] Render markdown myself (so I can edit it easily without another lib)
-      (Or maybe use [leptos-markdown](https://github.com/rambip/leptos-markdown)? It supports [custom
+- [ ] Render UI elements embedded in Markdown using `leptos-markdown`'s [custom
       components](https://github.com/rambip/leptos-markdown/blob/main/examples/custom_component/src/main.rs))
       (Also note the same author made [dioxus-markdown](https://github.com/rambip/dioxus-markdown))
+      (Note too that the author stated that it will move to [rust-web-markdown](https://github.com/rambip/rust-web-markdown),
+      which right now contains a framework agnostic implementation)
 - [ ] Add button to create lists
 - [ ] Add button to create tasks
 - [ ] Button to remove lists

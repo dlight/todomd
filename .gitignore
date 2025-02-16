@@ -1,5 +1,8 @@
 /backend/target/
+/backend/tauri-bin/gen/
 /frontend/target/
-/frontend/dist/
+/frontend/leptos-ui/dist/
+
+/.overmind.sock
 
 **/*.rs.bk
