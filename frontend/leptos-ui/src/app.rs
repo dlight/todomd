@@ -1,3 +1,4 @@
+use leptos::html::*;
 use leptos::task::spawn_local;
 use leptos::{ev::SubmitEvent, prelude::*};
 use serde::{Deserialize, Serialize};
@@ -12,6 +13,20 @@ extern "C" {
 #[derive(Serialize, Deserialize)]
 struct GreetArgs<'a> {
     name: &'a str,
+}
+
+#[component]
+pub fn Test() -> impl IntoView {
+    let initial = div();
+
+    let mut inner = vec![];
+
+    for i in 0..10 {
+        let s = p().child(i.to_string());
+        inner.push(s);
+    }
+
+    initial.child(inner)
 }
 
 #[component]
@@ -62,6 +77,8 @@ pub fn App() -> impl IntoView {
                 <button type="submit">"Greet"</button>
             </form>
             <p>{ move || greet_msg.get() }</p>
+
+            <Test />
         </main>
     }
 }

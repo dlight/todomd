@@ -6,16 +6,10 @@ this tool is for...
 Stuff relegated to a distant future can be found in `BACKLOG.md`. When it's time
 to do something *now*, it is moved here.
 
-- [ ] Use Leptos' view builder syntax to build some random dynamic content.
-- [ ] Modify the UI to display markdown files in a debug mode, highlighting the
-      background of portions of text that correspond to a given node's span.
-  - [ ] Display the bare source of markdown in a `<pre>` tag (without rendering
-        it on the side). `leptos-markdown` won't work right now because [it
-        doesn't support leptos 0.7
-        yet](https://github.com/rambip/leptos-markdown/issues/16).
-  - [ ] Add a way to highlight some spans
-
-Hmm.
+- [x] Use Leptos' view builder syntax to build some random dynamic content.
+- [ ] Display markdown in `<pre>`
+- [ ] Highlighting a single span of text (like, the first item, of the first list).
+- [ ] Highlight multiple spans of text.
 
 ### TODO notes
 
