@@ -1,9 +1,3 @@
-use std::future::Future;
-use std::ops::DerefMut;
-use std::pin::Pin;
-use std::sync::{Arc, Mutex};
-use std::task::{Context, Poll};
-
 use leptos::html::*;
 use leptos::task::spawn_local;
 use leptos::{ev::SubmitEvent, prelude::*};
@@ -91,52 +85,48 @@ pub fn App() -> impl IntoView {
         });
     };
 
-    struct Sendable<T>(pub T);
+    let (num, set_num) = signal(None);
 
-    // Safety: WebAssembly will only ever run in a single-threaded context.
-    // (This is of course totally unhinged, TODO remove later)
-    unsafe impl<T> Send for Sendable<T> {}
+    spawn_local(async move {
+        let n = invoke("get_num", JsValue::NULL).await.as_f64().unwrap() as u32;
 
-    impl<T: Future> Future for Sendable<T> {
-        type Output = T::Output;
-
-        // Safety: this is ok because I'm not moving the data.
-        // However if this was serious I would use pin-project.
-        fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-            unsafe { Pin::new_unchecked(&mut self.get_unchecked_mut().0).poll(cx) }
-        }
-    }
-
-    let async_num =
-        Sendable(async { invoke("get_num", JsValue::NULL).await.as_f64().unwrap() as u32 });
+        set_num.set(Some(n));
+    });
 
     view! {
-            <main class="container">
-                <h1>"Welcome to Tauri + Leptos"</h1>
+        <main class="container">
+            <h1>"Welcome to Tauri + Leptos"</h1>
 
-                <div class="row">
-                    <a href="https://tauri.app" target="_blank">
-                        <img src="public/tauri.svg" class="logo tauri" alt="Tauri logo"/>
-                    </a>
-                    <a href="https://docs.rs/leptos/" target="_blank">
-                        <img src="public/leptos.svg" class="logo leptos" alt="Leptos logo"/>
-                    </a>
-                </div>
-                <p>"Click on the Tauri and Leptos logos to learn more."</p>
+            <div class="row">
+                <a href="https://tauri.app" target="_blank">
+                    <img src="public/tauri.svg" class="logo tauri" alt="Tauri logo"/>
+                </a>
+                <a href="https://docs.rs/leptos/" target="_blank">
+                    <img src="public/leptos.svg" class="logo leptos" alt="Leptos logo"/>
+                </a>
+            </div>
+            <p>"Click on the Tauri and Leptos logos to learn more."</p>
 
-                <form class="row" on:submit=greet>
-                    <input
-                        id="greet-input"
-                        placeholder="Enter a name..."
-                        on:input=update_name
-                    />
-                    <button type="submit">"Greet"</button>
-                </form>
-                <p>{ move || greet_msg.get() }</p>
+            <form class="row" on:submit=greet>
+                <input
+                    id="greet-input"
+                    placeholder="Enter a name..."
+                    on:input=update_name
+                />
+                <button type="submit">"Greet"</button>
+            </form>
+            <p>{ move || greet_msg.get() }</p>
 
-                <Await future=async_num let:num>
-    <               Test max=*num />
-                </Await>
-            </main>
-        }
+            {move || {
+                if let Some(n) = num.get() {
+                    view! {
+                        <Test max=n />
+                    }.into_any()
+                }
+                else {
+                    ().into_any()
+                }
+            }}
+        </main>
+    }
 }

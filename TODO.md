@@ -7,6 +7,7 @@ Stuff relegated to a distant future can be found in `BACKLOG.md`. When it's time
 to do something *now*, it is moved here.
 
 - [x] Use Leptos' view builder syntax to build some random dynamic content.
+- [ ] Read markdown in Tauri and pass it through a command.
 - [ ] Display markdown in `<pre>`
 - [ ] Highlighting a single span of text (like, the first item, of the first list).
 - [ ] Highlight multiple spans of text.
