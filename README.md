@@ -59,7 +59,7 @@ To run the development tauri app + trunk server, run this (you will need both
 `just` and `overmind`)
 
 ```sh
-overmind start
+just dev
 ```
 
 (Alternatively you can run `just backend` in a terminal, and `just frontend` in
