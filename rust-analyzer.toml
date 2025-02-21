@@ -1,25 +1,3 @@
-# This file isn't doing anything right now because loading this config file isn't fully implemented by r-a
-#
-# https://github.com/rust-lang/rust-analyzer/issues/13529#issuecomment-2594960157
-# https://github.com/rust-lang/rust-analyzer/pull/18949
-#
-# Also Zed doesn't have a way to add per-project configuration into Git (comments below made by me)
-#
-# https://github.com/zed-industries/zed/issues/6035#issuecomment-2660864723
-# https://github.com/zed-industries/zed/issues/5443#issuecomment-2660861289
-#
-# because of that, I had to add this to my ~/.config/zed/settings.json
-#
-# "lsp": {
-#   "rust-analyzer": {
-#     "initialization_options": {
-#       "cargo": {
-#         "targetDir": true
-#       }
-#     }
-#   }
-# }
-
 [initializationOptions]
 
 # workaround due to odd bug
