@@ -16,11 +16,11 @@ struct GreetArgs<'a> {
 }
 
 #[component]
-pub fn Test(max: u32) -> impl IntoView {
+pub fn Test1(max: u32) -> impl IntoView {
     macro_rules! heading {
         ($q:expr) => {{
             $q().style("margin: 0.5em;")
-                .child(format!("Level {max}"))
+                .child(format!("1 Level {max}"))
                 .into_any()
         }};
     }
@@ -49,7 +49,7 @@ pub fn Test(max: u32) -> impl IntoView {
         let half = max / 2;
 
         if half > 0 {
-            let q = Test(TestProps::builder().max(half).build()).into_any();
+            let q = Test1(Test1Props::builder().max(half).build()).into_any();
 
             inner.push((q, s).into_any())
         } else {
@@ -58,6 +58,52 @@ pub fn Test(max: u32) -> impl IntoView {
     }
 
     initial.child(inner)
+}
+
+#[component]
+pub fn Test2(max: u32) -> impl IntoView {
+    macro_rules! heading {
+        ($q:expr) => {{
+            $q().style("margin: 0.5em;")
+                .child(format!("2 Level {max}"))
+                .into_any()
+        }};
+    }
+
+    let tag = match max {
+        i if i <= 1 => heading!(h5),
+        i if i <= 2 => heading!(h4),
+        i if i <= 4 => heading!(h3),
+        i if i <= 8 => heading!(h2),
+        _ => heading!(h1),
+    };
+
+    view! {
+        <div style="border: 1px solid black; margin: 0.5em;">
+            {{tag}}
+            {move||
+                (0..max).map(|i| {
+                    view! {
+                        <div>
+                            {move || {
+                                let half = max / 2;
+                                (half > 0).then(|| view! {
+                                    <Test2 max=half />
+                                }).into_any()
+                            }}
+                            {move ||
+                                (0..(max / 2)).map(|j| {
+                                    view! {
+                                        <span>{i * j}:</span>
+                                    }
+                                }).collect_view()
+                            }
+                        </div>
+                    }
+                }).collect_view()
+            }
+        </div>
+    }
 }
 
 #[component]
@@ -118,14 +164,18 @@ pub fn App() -> impl IntoView {
             <p>{ move || greet_msg.get() }</p>
 
             {move || {
-                if let Some(n) = num.get() {
+                num.get().map(|n| {
                     view! {
-                        <Test max=n />
-                    }.into_any()
-                }
-                else {
-                    ().into_any()
-                }
+                        <div style="display: flex">
+                            <div>
+                                <Test1 max=n />
+                            </div>
+                            <div>
+                                <Test2 max=n />
+                            </div>
+                        </div>
+                    }
+                })
             }}
         </main>
     }
