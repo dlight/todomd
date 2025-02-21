@@ -80,28 +80,28 @@ pub fn Test2(max: u32) -> impl IntoView {
 
     view! {
         <div style="border: 1px solid black; margin: 0.5em;">
-            {{tag}}
-            {move||
-                (0..max).map(|i| {
-                    view! {
-                        <div>
-                            {move || {
-                                let half = max / 2;
-                                (half > 0).then(|| view! {
-                                    <Test2 max=half />
-                                }).into_any()
-                            }}
-                            {move ||
-                                (0..(max / 2)).map(|j| {
-                                    view! {
-                                        <span>{i * j}:</span>
-                                    }
-                                }).collect_view()
-                            }
-                        </div>
-                    }
-                }).collect_view()
-            }
+            {{ tag }}
+            {move || {
+                (0..max)
+                    .map(|i| {
+                        view! {
+                            <div>
+                                {move || {
+                                    let half = max / 2;
+                                    (half > 0).then(|| view! { <Test2 max=half /> }).into_any()
+                                }}
+                                {move || {
+                                    (0..(max / 2))
+                                        .map(|j| {
+                                            view! { <span>{i * j}:</span> }
+                                        })
+                                        .collect_view()
+                                }}
+                            </div>
+                        }
+                    })
+                    .collect_view()
+            }}
         </div>
     }
 }
@@ -145,37 +145,34 @@ pub fn App() -> impl IntoView {
 
             <div class="row">
                 <a href="https://tauri.app" target="_blank">
-                    <img src="public/tauri.svg" class="logo tauri" alt="Tauri logo"/>
+                    <img src="public/tauri.svg" class="logo tauri" alt="Tauri logo" />
                 </a>
                 <a href="https://docs.rs/leptos/" target="_blank">
-                    <img src="public/leptos.svg" class="logo leptos" alt="Leptos logo"/>
+                    <img src="public/leptos.svg" class="logo leptos" alt="Leptos logo" />
                 </a>
             </div>
             <p>"Click on the Tauri and Leptos logos to learn more."</p>
 
             <form class="row" on:submit=greet>
-                <input
-                    id="greet-input"
-                    placeholder="Enter a name..."
-                    on:input=update_name
-                />
+                <input id="greet-input" placeholder="Enter a name..." on:input=update_name />
                 <button type="submit">"Greet"</button>
             </form>
-            <p>{ move || greet_msg.get() }</p>
+            <p>{move || greet_msg.get()}</p>
 
             {move || {
-                num.get().map(|n| {
-                    view! {
-                        <div style="display: flex">
-                            <div>
-                                <Test1 max=n />
+                num.get()
+                    .map(|n| {
+                        view! {
+                            <div style="display: flex">
+                                <div>
+                                    <Test1 max=n />
+                                </div>
+                                <div>
+                                    <Test2 max=n />
+                                </div>
                             </div>
-                            <div>
-                                <Test2 max=n />
-                            </div>
-                        </div>
-                    }
-                })
+                        }
+                    })
             }}
         </main>
     }
